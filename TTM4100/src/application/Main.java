@@ -1,8 +1,5 @@
 package application;
 	
-import java.awt.Dimension;
-import java.awt.Toolkit;
-
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
@@ -13,16 +10,20 @@ import javafx.scene.layout.HBox;
 
 
 public class Main extends Application {
+	
+	Button clientButton;
+	Button serverButton;
+	int counter = 0;
+	
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 			BorderPane root = new BorderPane();
 			Scene scene = new Scene(root,420,400);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			
-			Button clientButton = new Button("Client");
-			Button serverButton = new Button("Server");
+			clientButton = new Button("Client");
+			serverButton = new Button("Server");
 			HBox holder = new HBox(clientButton, serverButton);
 			holder.setSpacing(10);
 			holder.setAlignment(Pos.CENTER);
@@ -31,6 +32,8 @@ public class Main extends Application {
 			clientButton.setOnAction(e -> {
 				Client client = new Client();
 				client.setX(primaryStage.getX() - client.getScene().getWidth() - 10);
+				client.setY(client.getY() + counter - 200);
+				counter += client.getScene().getHeight() + 40;
 			});
 			
 			serverButton.setOnAction(e -> {
@@ -42,11 +45,18 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 			
-			serverButton.fire();
-			clientButton.fire();
+			//TODO Remove after develop is done;
+			developMode();
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void developMode() {
+		serverButton.fire();
+		clientButton.fire();
+		clientButton.fire();
+		clientButton.fire();
 	}
 	
 	public static void main(String[] args) {
