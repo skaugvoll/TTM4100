@@ -1,63 +1,68 @@
 package application;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
-public class Server implements Runnable{
-	private Socket socket;
-	private ServerSocket server;
-	private final Main main;
+public class Server extends Stage{
 	
-	public Server(Main main) {
-		this.main = main;
+	private ServerSocket server;
+	private ListView<Label> clients = new ListView<Label>();
+	
+	public Server() {
+		super();
+		BorderPane root = new BorderPane();
+		Scene scene = new Scene(root, 400, 400);
+		super.setScene(scene);
+		super.setTitle("TTM4100 [Server]");
+		super.show();
 		
 		try {
+			//Prøver å opprette en serversocket på lokal IP adresse med port 4321
 			server = new ServerSocket(4321, 10, InetAddress.getLocalHost());
 		}
 		catch (IOException e) {
-			System.out.println("Noe gikk galt");
 			e.printStackTrace();
 		}
+		
+		root.setTop(new Label("IP: " + getAddress()));
+		
+		VBox holder = new VBox(new Label("Connected clients:"), clients);
+		holder.setSpacing(5);
+		root.setCenter(holder);
+		clients.setEditable(false);
+		clients.setFocusTraversable(false);
+		
+		BorderPane.setAlignment(root.getTop(), Pos.CENTER);
+		
+		Thread acceptThread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				while(true) {
+					try {				
+						ServerSocketThread socket = new ServerSocketThread(server.accept());
+						clients.getItems().add(new Label(socket.getAddress()));
+					}
+					catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		acceptThread.start();
 	}
 	
 	public String getAddress() {
 		return server.getInetAddress().toString().split("/")[1];
-	}
-
-	@Override
-	public void run() {
-		try {
-			socket = server.accept();
-			String clientIP = socket.getRemoteSocketAddress().toString().substring(1).split(":")[0];
-			Platform.runLater(new Runnable() {
-				
-				@Override
-				public void run() {
-//					main.connectedToYou(clientIP);
-				}
-			});
-			while (true){
-				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-				String line = in.readLine();
-				Platform.runLater(new Runnable() {
-					
-					@Override
-					public void run() {
-//						main.recieve(line);
-					}
-				});
-			}
-		}
-		catch (IOException e) {
-			System.out.println("Read failed");
-			System.exit(-1);
-		}
 	}
 }
