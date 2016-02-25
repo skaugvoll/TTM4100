@@ -60,14 +60,6 @@ public class Server extends Stage{
 				while(true) {
 					try {				
 						ServerSocketThread socket = new ServerSocketThread(server, serverSocket.accept());
-						clients.add(socket);
-						Platform.runLater(new Runnable() {
-							
-							@Override
-							public void run() {
-								clientlist.getItems().add(new Label(socket.getAddress()));
-							}
-						});
 					}
 					catch (IOException e) {
 						e.printStackTrace();
@@ -89,19 +81,38 @@ public class Server extends Stage{
 		}
 	}
 	
-	public boolean addUser(String name) {
+	public boolean addUser(ServerSocketThread client, String name) {
 		for (String user : users) {
 			if (user.equals(name)) {
 				return false;
 			}
 		}
 		users.add(name);
+		clients.add(client);
+		Platform.runLater(new Runnable() {
+			@Override
+			public void run() {
+				clientlist.getItems().add(new Label(name + "\nIP: " + client.getAddress()));
+			}
+		});
 		return true;
 	}
 	
-	public boolean removeUser(String name) {
+	public boolean removeUser(ServerSocketThread client, String name) {
 		if (users.contains(name)) {
 			users.remove(name);
+			clients.remove(client);
+			Platform.runLater(new Runnable() {
+				@Override
+				public void run() {
+					for (Label label : clientlist.getItems()) {
+						if (label.getText().equals(name + "\nIP: " + client.getAddress())) {
+							clientlist.getItems().remove(label);
+							break;
+						}
+					}
+				}
+			});
 			return true;
 		}
 		return false;

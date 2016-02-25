@@ -1,6 +1,7 @@
 package application;
 	
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -44,6 +45,8 @@ public class Main extends Application {
 			primaryStage.setTitle("TTM4100 [Client/Server] chat");
 			primaryStage.setScene(scene);
 			primaryStage.show();
+			
+			primaryStage.setOnCloseRequest(e -> System.exit(1));
 			
 			//TODO Remove after develop is done;
 			developMode();

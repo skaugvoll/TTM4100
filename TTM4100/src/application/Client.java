@@ -57,7 +57,7 @@ public class Client extends Stage{
 		HBox holder = new HBox(chatInput, sendButton);
 		root.setBottom(holder);
 		
-		write("Welcome!\nEnter a server-address to start a connection");
+		write(Color.PURPLE, true, "Welcome!\nEnter a server-address to start a connection");
 		chatInput.setOnAction(e -> setup());
 		sendButton.setOnAction(e -> setup());
 		
@@ -65,6 +65,12 @@ public class Client extends Stage{
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends Object> c) {
 				chatOutput.scrollTo(chatOutput.getItems().size());
+			}
+		});
+		
+		setOnCloseRequest(e -> {
+			if (listnerThread != null) {
+				out.println(jSonFormat("ForceExit", "None"));
 			}
 		});
 		
@@ -94,7 +100,7 @@ public class Client extends Stage{
 				
 				@Override
 				public void run() {
-					while(true) {
+					while(!Thread.currentThread().isInterrupted()) {
 						try {
 							formatMessage(in.readLine());
 						}
@@ -105,6 +111,7 @@ public class Client extends Stage{
 				}
 			});
 			listnerThread.start();
+			listnerThread.setName("ClientThread");
 		}
 		catch (IOException e) {
 			return false;
@@ -181,14 +188,21 @@ public class Client extends Stage{
 	private void formatMessage(String message) {
 		try {
 			JSONObject messageObject = (JSONObject) parser.parse(message);
-			String timestamp = (String) messageObject.get("timestamp");
-			String sender = (String) messageObject.get("sender");
-			String response = (String) messageObject.get("response");
-			String content = (String) messageObject.get("content");
-			write(Color.BLUEVIOLET, false, timestamp);
-			write(Color.BLUEVIOLET, false, sender);
-			write(Color.BLUEVIOLET, false, response);
-			write(Color.BLUEVIOLET, false, content);
+			String timestamp = "Timestamp:\t" +  messageObject.get("timestamp");
+			String sender = "Sender:\t\t" + messageObject.get("sender");
+			String response = "Response:\t" + messageObject.get("response");
+			String content = "Content:\t\t" + messageObject.get("content");
+			write(Color.BLUEVIOLET, false, timestamp, sender, response, content);
+			if (messageObject.get("response").equals("Logout")) {
+				write(Color.PURPLE, true, "No longer connected to a server", "Enter a server-address to start a connection");
+				listnerThread.interrupt();
+				listnerThread = null;
+				chatInput.setOnAction(e -> setup());
+				sendButton.setOnAction(e -> setup());
+			}
+			else if (messageObject.get("response").equals("ForceExit")) {
+				listnerThread.interrupt();
+			}
 		}
 		catch (ParseException e) {
 			e.printStackTrace();

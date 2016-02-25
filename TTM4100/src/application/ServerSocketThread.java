@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 public class ServerSocketThread {
 
 	private Socket socket;
+	private ServerSocketThread sst;
 	private BufferedReader in;
 	private PrintWriter out;
 	private String threadUserName = "Empty";
@@ -23,6 +24,7 @@ public class ServerSocketThread {
 	
 	public ServerSocketThread(Server server, Socket socket) {
 		this.socket = socket;
+		sst = this;
 		try {			
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
@@ -30,46 +32,61 @@ public class ServerSocketThread {
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		new Thread(new Runnable() {
+		Thread serverThread = new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
+				Thread.currentThread().setName("ServerSocketThread");
 				while(true) {
 					try {
 						String message = in.readLine();
 						
 						String response = "", content = "";
 						JSONObject messageObject = (JSONObject) parser.parse(message);
-						System.out.println(messageObject.get("content"));
 						
 						//check what request, and content.
 						if(messageObject.get("request").equals("login")){
 							String usrName = messageObject.get("content").toString();
 							if(usrName.matches("[a-zA-Z0-9]+")){
-								if(server.addUser(usrName)){
+								if(server.addUser(sst, usrName)){
 									threadUserName = usrName;
-									server.recieve(jSonFormat("Login",usrName));
+									send(jSonFormat("Login", usrName));
 								}
 								else{
-									server.recieve(jSonFormat("Login", "Username taken"));
+									send(jSonFormat("Error", "Username taken"));
 								}
 							}
 							else{
-								server.recieve(jSonFormat("Error", "Not leagal username. must match [a-zA-Z0-9]+"));
+								send(jSonFormat("Error", "Not leagal username. must match [a-zA-Z0-9]+"));
 							}
 						}
 						
 						else if(messageObject.get("request").equals("logout")){
-							if(server.removeUser(threadUserName)){
-								server.recieve(jSonFormat("Logout", threadUserName +" logged out"));
+							if(server.removeUser(sst, threadUserName)){
+								send(jSonFormat("Logout", threadUserName));
+								Thread.currentThread().interrupt();
+								return;
 							}
 							else{
-								server.recieve(jSonFormat("Error", "Something went wrong wile loggoing out"));
+								send(jSonFormat("Error", "Something went wrong while loggoing out"));
+							}
+						}
+						
+						else if (messageObject.get("request").equals("ForceExit")) {
+							if(server.removeUser(sst, threadUserName)){
+								send(jSonFormat("ForceExit", threadUserName));
+								Thread.currentThread().interrupt();
+								return;
+							}
+							else {
+								send(jSonFormat("ForceExit", threadUserName));
+								Thread.currentThread().interrupt();
+								return;
 							}
 						}
 						
 						else if(messageObject.get("request").equals("msg")){
-							server.recieve(jSonFormat("Message",messageObject.get("content").toString()));
+							server.recieve(jSonFormat("Message", messageObject.get("content").toString()));
 						}
 						
 						else if(messageObject.get("request").equals("names")){
@@ -81,12 +98,12 @@ public class ServerSocketThread {
 						}
 						
 						else if(messageObject.get("request").equals("help")){
-							send("Server commands:" + Color.BLUE.toString() + "\n"
-									+ "\tlogin<username>" + Color.BLUEVIOLET.toString() + "\n"
-									+ "\tlogout" + Color.BLUEVIOLET.toString() + "\n"
-									+ "\tmsg<message>" + Color.BLUEVIOLET.toString() + "\n"
-									+ "\tnames" + Color.BLUEVIOLET.toString() + "\n"
-									+ "\thelp" + Color.BLUEVIOLET.toString());
+							send(jSonFormat("Help", "Server commands: "
+									+ "login<username>, "
+									+ "logout, "
+									+ "msg<message>, "
+									+ "names, "
+									+ "help"));
 						}
 						
 						else{
@@ -101,8 +118,8 @@ public class ServerSocketThread {
 					}
 				}
 			}
-		}).start();
-		
+		});
+		serverThread.start();
 		
 	}
 	
