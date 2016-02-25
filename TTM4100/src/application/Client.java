@@ -9,6 +9,10 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,6 +39,7 @@ public class Client extends Stage{
 	private ListView<Label> chatOutput = new ListView<Label>();
 	private Button sendButton = new Button("Connect");
 	private Thread listnerThread;
+	private JSONParser parser = new JSONParser();
 	
 	public Client(){
 		super();
@@ -172,5 +177,22 @@ public class Client extends Stage{
 				chatOutput.getItems().add(item);		
 			}
 		});
+	}
+	
+	private void formatMessage(String message) {
+		try {
+			JSONObject messageObject = (JSONObject) parser.parse(message);
+			String timestamp = (String) messageObject.get("timestamp");
+			String sender = (String) messageObject.get("timestamp");
+			String response = (String) messageObject.get("timestamp");
+			String content = (String) messageObject.get("timestamp");
+			write(timestamp, Color.MEDIUMTURQUOISE);
+			write(sender, Color.MEDIUMTURQUOISE);
+			write(response, Color.MEDIUMTURQUOISE);
+			write(content, Color.MEDIUMTURQUOISE);
+		}
+		catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 }
