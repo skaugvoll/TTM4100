@@ -39,8 +39,24 @@ public class ServerSocketThread {
 						
 						String response = "", content = "";
 						JSONObject messageObject = (JSONObject) parser.parse(message);
+						System.out.println(messageObject.get("content"));
 						
-						
+						//check what request, and content.
+						if(messageObject.get("request").equals("login")){
+							
+						}
+						else if(messageObject.get("request").equals("logout")){
+							
+						}
+						else if(messageObject.get("request").equals("msg")){
+							server.recieve(jSonFormat("msg",messageObject.get("content").toString()));
+						}
+						else if(messageObject.get("request").equals("names")){
+							server.recieve("names",server.getUsers());
+						}
+						else if(messageObject.get("request").equals("help")){
+							
+						}
 						
 						server.recieve(jSonFormat(response, content));
 					}
