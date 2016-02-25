@@ -24,6 +24,7 @@ public class Server extends Stage{
 	private Server server;
 	private ListView<Label> clientlist = new ListView<Label>();
 	private ArrayList<ServerSocketThread> clients = new ArrayList<ServerSocketThread>();
+	private ArrayList<String> users = new ArrayList<String>();
 	
 	public Server() {
 		super();
@@ -86,5 +87,33 @@ public class Server extends Stage{
 		for (ServerSocketThread sSocket: clients) {
 			sSocket.send(message);
 		}
+	}
+	
+	public boolean addUser(String name) {
+		for (String user : users) {
+			if (user.equals(name)) {
+				return false;
+			}
+		}
+		users.add(name);
+		return true;
+	}
+	
+	public boolean removeUser(String name) {
+		if (users.contains(name)) {
+			users.remove(name);
+			return true;
+		}
+		return false;
+	}
+	
+	public String[] getUsers() {
+		String[] brukere = new String[users.size()];
+		
+		for (int i = 0; i < brukere.length; i ++) {
+			brukere[i] = users.get(i);
+		}
+		
+		return brukere;
 	}
 }
