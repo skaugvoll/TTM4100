@@ -14,8 +14,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -59,7 +57,7 @@ public class Client extends Stage{
 		HBox holder = new HBox(chatInput, sendButton);
 		root.setBottom(holder);
 		
-		write("Welcome!\nEnter a server-address to start a connection\n");
+		write("Welcome!\nEnter a server-address to start a connection");
 		chatInput.setOnAction(e -> setup());
 		sendButton.setOnAction(e -> setup());
 		
@@ -81,7 +79,7 @@ public class Client extends Stage{
 	}
 	
 	private boolean connect(String address) {
-		write("Trying to connect to: " + address + "\n", Color.BLUE);
+		write(Color.BLUE, true, "Trying to connect to: " + address);
 		socket = new Socket();
 		try {
 			//Prøver å opprette forbindelse til serveren med gitt adresse og port
@@ -98,7 +96,7 @@ public class Client extends Stage{
 				public void run() {
 					while(true) {
 						try {
-							write(in.readLine());
+							formatMessage(in.readLine());
 						}
 						catch (IOException e) {
 							e.printStackTrace();
@@ -116,13 +114,13 @@ public class Client extends Stage{
 	
 	private void setup() {
 		if (connect(chatInput.getText())) {
-			write("Successfully connected to the server\n", Color.GREEN);
+			write(Color.GREEN, true,"Successfully connected to the server");
 			chatInput.setOnAction(e -> send());
 			sendButton.setOnAction(e -> send());
 			sendButton.setText("Send");
 		}
 		else {
-			write("Could not connect to the given address\n", Color.RED);
+			write(Color.RED, true, "Could not connect to the given address");
 		}
 		chatInput.requestFocus();
 		chatInput.setText("");
@@ -142,7 +140,7 @@ public class Client extends Stage{
 			out.println(jSonFormat(request, "None"));
 		}
 		else {
-			write("Message format not recognized", Color.RED);
+			write(Color.RED, true, "Message format not recognized");
 		}
 		
 		chatInput.requestFocus();
@@ -157,23 +155,24 @@ public class Client extends Stage{
 	}
 	
 	private void write(String message) {
-		String[] split = message.split("0x");
-		if (split.length == 2) {
-			write(split[0], Color.web(split[1]));
-		}
-		else {			
-			write(message, Color.BLACK);
-		}
+		write(Color.BLACK, false, message);
 	}
 	
-	private void write(String message, Color color) {
+	private void write(Color color, boolean bold, String... message) {
 		Platform.runLater(new Runnable() {
 			
 			@Override
 			public void run() {
-				Label item = new Label(message);
+				StringBuilder sb = new StringBuilder();
+				for (String msg : message) {
+					sb.append(msg + "\n");
+				}
+				Label item = new Label(sb.toString());
 				String hex = "#"+ color.toString().substring(2);
 				item.styleProperty().set("-fx-text-fill: " + hex + ";");
+				if (bold) {
+					item.styleProperty().set(item.styleProperty().get() + "-fx-font-weight: bold;");
+				}
 				chatOutput.getItems().add(item);		
 			}
 		});
@@ -183,13 +182,13 @@ public class Client extends Stage{
 		try {
 			JSONObject messageObject = (JSONObject) parser.parse(message);
 			String timestamp = (String) messageObject.get("timestamp");
-			String sender = (String) messageObject.get("timestamp");
-			String response = (String) messageObject.get("timestamp");
-			String content = (String) messageObject.get("timestamp");
-			write(timestamp, Color.MEDIUMTURQUOISE);
-			write(sender, Color.MEDIUMTURQUOISE);
-			write(response, Color.MEDIUMTURQUOISE);
-			write(content, Color.MEDIUMTURQUOISE);
+			String sender = (String) messageObject.get("sender");
+			String response = (String) messageObject.get("response");
+			String content = (String) messageObject.get("content");
+			write(Color.BLUEVIOLET, false, timestamp);
+			write(Color.BLUEVIOLET, false, sender);
+			write(Color.BLUEVIOLET, false, response);
+			write(Color.BLUEVIOLET, false, content);
 		}
 		catch (ParseException e) {
 			e.printStackTrace();
