@@ -98,7 +98,7 @@ public class Client extends Stage{
 				public void run() {
 					while(true) {
 						try {
-							formatMessage(in.readLine());
+							write(in.readLine());
 						}
 						catch (IOException e) {
 							e.printStackTrace();
