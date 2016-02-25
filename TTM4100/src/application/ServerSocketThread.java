@@ -17,6 +17,7 @@ public class ServerSocketThread {
 	private Socket socket;
 	private BufferedReader in;
 	private PrintWriter out;
+	private String threadUserName = "Empty";
 	
 	private JSONParser parser = new JSONParser();
 	
@@ -39,10 +40,58 @@ public class ServerSocketThread {
 						
 						String response = "", content = "";
 						JSONObject messageObject = (JSONObject) parser.parse(message);
+						System.out.println(messageObject.get("content"));
 						
+						//check what request, and content.
+						if(messageObject.get("request").equals("login")){
+							String usrName = messageObject.get("content").toString();
+							if(usrName.matches("[a-zA-Z0-9]+")){
+								if(server.addUser(usrName)){
+									threadUserName = usrName;
+									server.recieve(jSonFormat("Login",usrName));
+								}
+								else{
+									server.recieve(jSonFormat("Login", "Username taken"));
+								}
+							}
+							else{
+								server.recieve(jSonFormat("Error", "Not leagal username. must match [a-zA-Z0-9]+"));
+							}
+						}
 						
+						else if(messageObject.get("request").equals("logout")){
+							if(server.removeUser(threadUserName)){
+								server.recieve(jSonFormat("Logout", threadUserName +" logged out"));
+							}
+							else{
+								server.recieve(jSonFormat("Error", "Something went wrong wile loggoing out"));
+							}
+						}
 						
-						server.recieve(jSonFormat(response, content));
+						else if(messageObject.get("request").equals("msg")){
+							server.recieve(jSonFormat("Message",messageObject.get("content").toString()));
+						}
+						
+						else if(messageObject.get("request").equals("names")){
+							String currentUsers = "";
+							for(String user : server.getUsers()){
+								currentUsers += user + "\n";
+							}
+							send(currentUsers);
+						}
+						
+						else if(messageObject.get("request").equals("help")){
+							send("Server commands:" + Color.BLUE.toString() + "\n"
+									+ "\tlogin<username>" + Color.BLUEVIOLET.toString() + "\n"
+									+ "\tlogout" + Color.BLUEVIOLET.toString() + "\n"
+									+ "\tmsg<message>" + Color.BLUEVIOLET.toString() + "\n"
+									+ "\tnames" + Color.BLUEVIOLET.toString() + "\n"
+									+ "\thelp" + Color.BLUEVIOLET.toString());
+						}
+						
+						else{
+							server.recieve(jSonFormat(response, content));
+						}
 					}
 					catch (IOException e) {
 						e.printStackTrace();
@@ -54,18 +103,13 @@ public class ServerSocketThread {
 			}
 		}).start();
 		
-		send("Server commands:" + Color.BLUE.toString() + "\n"
-				+ "\tlogin<username>" + Color.BLUEVIOLET.toString() + "\n"
-				+ "\tlogout" + Color.BLUEVIOLET.toString() + "\n"
-				+ "\tmsg<message>" + Color.BLUEVIOLET.toString() + "\n"
-				+ "\tnames" + Color.BLUEVIOLET.toString() + "\n"
-				+ "\thelp" + Color.BLUEVIOLET.toString());
+		
 	}
 	
 	private String jSonFormat(String response, String content) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{\"timestamp\":\"" + System.currentTimeMillis() + "\",");
-		sb.append("\"sender\":\"" + getAddress() + "\",");
+		sb.append("\"sender\":\"" + threadUserName + "\",");
 		sb.append("\"response\":\"" + response + "\",");
 		sb.append("\"content\":\"" + content + "\"}");
 		return sb.toString();
