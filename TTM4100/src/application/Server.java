@@ -26,6 +26,8 @@ public class Server extends Stage{
 	private ArrayList<ServerSocketThread> clients = new ArrayList<ServerSocketThread>();
 	private ArrayList<String> users = new ArrayList<String>();
 	
+	private ArrayList<String[]> history = new ArrayList<>();
+	
 	public Server() {
 		super();
 		server = this;
@@ -127,4 +129,17 @@ public class Server extends Stage{
 		
 		return brukere;
 	}
+	
+	public void setHistory(String[] history){
+		this.history.add(history);
+	}
+	
+	public String getHistory(){
+		String history = "";
+		for (String[] list : this.history){
+			history += list[0] +" Sendt: " + list[1] +"\\n";
+		}
+		return history;
+	}
+	
 }
