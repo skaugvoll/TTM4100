@@ -89,7 +89,7 @@ public class Client extends Stage{
 		socket = new Socket();
 		try {
 			//Prøver å opprette forbindelse til serveren med gitt adresse og port
-			socket.connect(new InetSocketAddress(InetAddress.getByName(address), 4321), 50);
+			socket.connect(new InetSocketAddress(InetAddress.getByName(address), 9998), 50);
 			//in = hva som sendes til denne klienten fra serveren
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			
@@ -187,6 +187,7 @@ public class Client extends Stage{
 	
 	private void formatMessage(String message) {
 		try {
+			System.out.println(message);
 			JSONObject messageObject = (JSONObject) parser.parse(message);
 			String timestamp = "Timestamp:\t" +  messageObject.get("timestamp");
 			String sender = "Sender:\t\t" + messageObject.get("sender");

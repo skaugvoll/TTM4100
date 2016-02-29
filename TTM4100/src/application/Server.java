@@ -36,8 +36,8 @@ public class Server extends Stage{
 		super.show();
 		
 		try {
-			//Prøver å opprette en serversocket på lokal IP adresse med port 4321
-			serverSocket = new ServerSocket(4321, 10, InetAddress.getLocalHost());
+			//Prøver å opprette en serversocket på lokal IP adresse med port 9998
+			serverSocket = new ServerSocket(9998, 10, InetAddress.getLocalHost());
 		}
 		catch (IOException e) {
 			e.printStackTrace();

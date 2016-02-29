@@ -40,7 +40,6 @@ public class ServerSocketThread {
 				while(true) {
 					try {
 						String message = in.readLine();
-						
 						String response = "", content = "";
 						JSONObject messageObject = (JSONObject) parser.parse(message);
 						
