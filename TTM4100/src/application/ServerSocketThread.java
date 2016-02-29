@@ -50,7 +50,7 @@ public class ServerSocketThread {
 							if(usrName.matches("[a-zA-Z0-9]+")){
 								if(server.addUser(sst, usrName)){
 									threadUserName = usrName;
-									send(jSonFormat("Login", usrName));
+									send(jSonFormat("Info", "Login successful"));
 								}
 								else{
 									send(jSonFormat("Error", "Username taken"));
