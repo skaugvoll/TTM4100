@@ -45,7 +45,11 @@ public class ServerSocketThread {
 						JSONObject messageObject = (JSONObject) parser.parse(message);
 						
 						//check what request, and content.
-						if(messageObject.get("request").equals("login")){
+						if(threadUserName.equals("Empty") && (!messageObject.get("request").equals("login") && !messageObject.get("request").equals("help"))){
+							send(jSonFormat("Error","You must be logged in to do that"));
+						}
+						
+						else if(messageObject.get("request").equals("login")){
 							String usrName = messageObject.get("content").toString();
 							if(usrName.matches("[a-zA-Z0-9]+")){
 								if(server.addUser(sst, usrName)){
