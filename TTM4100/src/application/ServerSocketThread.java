@@ -100,9 +100,12 @@ public class ServerSocketThread {
 						else if(messageObject.get("request").equals("names")){
 							String currentUsers = "";
 							for(String user : server.getUsers()){
-								currentUsers += user + "\n";
+								if (currentUsers.length() > 0) {	
+									currentUsers += ", ";
+								}
+								currentUsers += user;
 							}
-							send(currentUsers);
+							send(jSonFormat("Names", currentUsers));
 						}
 						
 						else if(messageObject.get("request").equals("help")){

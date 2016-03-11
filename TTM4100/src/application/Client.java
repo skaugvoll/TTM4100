@@ -89,7 +89,7 @@ public class Client extends Stage{
 		socket = new Socket();
 		try {
 			//Prøver å opprette forbindelse til serveren med gitt adresse og port
-			socket.connect(new InetSocketAddress(InetAddress.getByName(address), 9998), 50);
+			socket.connect(new InetSocketAddress(InetAddress.getByName(address), 9998), 500);
 			//in = hva som sendes til denne klienten fra serveren
 			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			
